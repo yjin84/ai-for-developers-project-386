@@ -44,7 +44,10 @@ export default defineConfig({
     // печатает локальное время. Без фиксации тесты дадут разный результат
     // локально и в CI (там UTC). Это не перестраховка, а прямое следствие
     // того, как написан `src/lib/slots.ts`.
-    env: { TZ: 'Europe/Moscow' },
+    //
+    // VITE_API_BASE_URL задаётся явно, чтобы API-тесты не зависели от
+    // локального `.env` и шли на мок-адрес программно (см. `src/test/handlers`).
+    env: { TZ: 'Europe/Moscow', VITE_API_BASE_URL: 'http://api.test' },
     globals: false,
     coverage: {
       provider: 'v8',
