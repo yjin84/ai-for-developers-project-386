@@ -43,6 +43,9 @@ export const handlers = [
 
   http.get(`${API_BASE_URL}/event-types/:eventTypeId/slots`, ({ params }) => {
     const eventTypeId = params.eventTypeId as string
+    if (!state.eventTypes.some((e) => e.id === eventTypeId)) {
+      return HttpResponse.json({ code: 404, message: 'Тип события не найден' }, { status: 404 })
+    }
     return HttpResponse.json(freeSlotsFor(eventTypeId))
   }),
 

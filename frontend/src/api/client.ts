@@ -28,7 +28,16 @@ function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit): Promise
 }
 
 /**
- * Типобезопасный HTTP-клиент, сгенерированный из контракта OpenAPI
+ * Плейсхолдер базы, когда API не настроен. openapi-fetch строит URL
+ * строкой (`baseUrl + path`) и создаёт `new Request()` раньше, чем вызвал бы
+ * наш `fetch`. С `undefined` базы строка вышла бы неотносительной и запрос
+ * упал бы с `TypeError: Failed to parse URL` вне нашей обработки. Маскируем
+ * реальный адрес плейсхолдером, чтобы запрос дошёл до `fetchWithTimeout` и там
+ * был короткозамкнут в `NetworkError` с флагом `notConfigured` (см. ниже).
+ */
+const PLACEHOLDER_BASE_URL = 'http://api-not-configured.local'
+
+/** Типобезопасный HTTP-клиент, сгенерированный из контракта OpenAPI
  * (`typespec/tsp-output/schema/openapi.yaml` → `src/api/schema.d.ts`).
  *
  * Базовый URL берётся из переменной окружения `VITE_API_BASE_URL` —
@@ -37,6 +46,6 @@ function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit): Promise
  * прерываются в `errors.ts` (см. `isApiConfigured`), а UI показывает баннер.
  */
 export const apiClient = createClient<paths>({
-  baseUrl: apiBaseUrl,
+  baseUrl: apiBaseUrl ?? PLACEHOLDER_BASE_URL,
   fetch: fetchWithTimeout,
 })
