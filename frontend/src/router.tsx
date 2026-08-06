@@ -1,4 +1,4 @@
-import { createBrowserRouter, useParams } from 'react-router-dom'
+import { createBrowserRouter, useParams, type RouteObject } from 'react-router-dom'
 import { RootLayout } from '@/components/layout/RootLayout'
 import { AdminPage } from '@/pages/AdminPage'
 import { BookEventTypesPage } from '@/pages/BookEventTypesPage'
@@ -17,7 +17,9 @@ function BookSlotRoute() {
   return <BookSlotPage key={eventTypeId} />
 }
 
-export const router = createBrowserRouter([
+/** Дерево маршрутов — отдельным экспортом, чтобы тесты собирали
+ * `createMemoryRouter(routes, { initialEntries })` и не дублировали его. */
+export const routes: RouteObject[] = [
   {
     path: '/',
     element: <RootLayout />,
@@ -30,4 +32,6 @@ export const router = createBrowserRouter([
       { path: '*', element: <NotFoundPage /> },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter(routes)

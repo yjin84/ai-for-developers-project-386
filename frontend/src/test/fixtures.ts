@@ -78,25 +78,36 @@ export function availableSlotsFor(eventTypeId: string): AvailableSlot[] {
 
 /**
  * Бронирования для админской вкладки — намеренно в неотсортированном порядке
- * по `start`. Время (15:00 и далее) не пересекается со свободными слотами.
+ * по `start`. Старты сдвинуты по дням и часам, чтобы было что сортировать
+ * (все на один момент порядок не показал бы), и не пересекаются со свободными
+ * слотами фикстур (только 09:00–11:00 первых дней и 10:00 следующего месяца).
  */
 export function seedBookings(): BookingWithEventType[] {
   const consultation = eventTypes[0] as EventType
   const quickCall = eventTypes[1] as EventType
 
-  const byEventType = (eventType: EventType) => ({
-    id: `booking-${eventType.id}`,
-    eventType,
-    start: slotAt(3, 15, eventType.durationMinutes).start,
-    end: slotAt(3, 15, eventType.durationMinutes).end,
-    createdAt: slotAt(1, 20, eventType.durationMinutes).start,
-  })
+  const bookingAt = (
+    eventType: EventType,
+    id: string,
+    offsetDays: number,
+    hour: number,
+  ): BookingWithEventType => {
+    const start = atDay(offsetDays, hour)
+    const end = new Date(start.getTime() + eventType.durationMinutes * 60_000)
+    return {
+      id,
+      eventType,
+      start: start.toISOString(),
+      end: end.toISOString(),
+      createdAt: atDay(offsetDays - 1, 20).toISOString(),
+    }
+  }
 
   return [
-    byEventType(quickCall),
-    byEventType(consultation),
-    byEventType(consultation),
-    byEventType(quickCall),
+    bookingAt(quickCall, 'booking-quickcall-day1', 1, 18),
+    bookingAt(consultation, 'booking-consultation-day4', 4, 9),
+    bookingAt(consultation, 'booking-consultation-day2', 2, 17),
+    bookingAt(quickCall, 'booking-quickcall-day3', 3, 16),
   ]
 }
 
