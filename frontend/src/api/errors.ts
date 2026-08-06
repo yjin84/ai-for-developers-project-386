@@ -39,11 +39,26 @@ function toApiErrorKind(code: string | number | undefined): ApiErrorKind {
 
 /** Ошибка сети/недоступности сервера (запрос не дошёл до бэкенда). */
 export class NetworkError extends Error {
-  constructor(cause: unknown) {
+  /** Таймаут ответа сервера (отдельный текст от «нет соединения»). */
+  readonly timeout: boolean
+  /** API не настроен (`VITE_API_BASE_URL` не задан) — UI показывает баннер. */
+  readonly notConfigured: boolean
+
+  constructor(cause: unknown, options: { timeout?: boolean; notConfigured?: boolean } = {}) {
     super('Не удалось подключиться к серверу. Проверьте соединение и попробуйте снова.')
     this.name = 'NetworkError'
     this.cause = cause
+    this.timeout = options.timeout ?? isTimeoutError(cause)
+    this.notConfigured = options.notConfigured ?? false
   }
+}
+
+/**
+ * Определяет, что запрос прерван по таймауту `AbortSignal.timeout`
+ * (а не отменён вызывающей стороной — при размонтировании экрана).
+ */
+function isTimeoutError(cause: unknown): boolean {
+  return cause instanceof Error && cause.name === 'TimeoutError'
 }
 
 type ApiResult<T, E extends ErrorBody = ErrorBody> = {
@@ -64,6 +79,9 @@ export async function unwrap<T, E extends ErrorBody = ErrorBody>(
   try {
     result = await promise
   } catch (cause) {
+    // Fetch-враппер может уже бросить NetworkError (fail-fast без настроенной
+    // базы) — не оборачиваем его повторно, чтобы сохранить флаги.
+    if (cause instanceof NetworkError) throw cause
     throw new NetworkError(cause)
   }
 

@@ -117,7 +117,7 @@ export interface components {
         Booking: {
             id: string;
             /** @description Тип события, на который сделано бронирование. */
-            eventTypeId: string;
+            eventTypeId: components["schemas"]["EventTypeId"];
             /**
              * Format: date-time
              * @description Начало забронированного слота.
@@ -137,7 +137,7 @@ export interface components {
         /** @description Тело запроса на создание бронирования гостем. */
         BookingCreate: {
             /** @description Идентификатор выбранного типа события. */
-            eventTypeId: string;
+            eventTypeId: components["schemas"]["EventTypeId"];
             /**
              * Format: date-time
              * @description Начало выбранного гостем слота.
@@ -170,26 +170,36 @@ export interface components {
          */
         EventType: {
             /** @description Идентификатор задаётся владельцем календаря при создании. */
-            id: string;
+            id: components["schemas"]["EventTypeId"];
             /** @description Название типа события, например "Консультация". */
             name: string;
             /** @description Описание того, что будет происходить на встрече. */
             description: string;
             /**
              * Format: int32
-             * @description Длительность встречи в минутах.
+             * @description Длительность встречи в минутах: от 5 минут до 8 часов.
              */
             durationMinutes: number;
         };
         /** @description Тело запроса на создание типа события владельцем календаря. */
         EventTypeCreate: {
             /** @description Идентификатор нового типа события, задаётся владельцем. */
-            id: string;
+            id: components["schemas"]["EventTypeId"];
             name: string;
             description: string;
             /** Format: int32 */
             durationMinutes: number;
         };
+        /**
+         * @description Идентификатор типа события — kebab-case из латиницы и цифр,
+         *     например "consultation-30".
+         *
+         *     Формат ограничен, потому что идентификатор подставляется в пути
+         *     `/event-types/{id}` и `/event-types/{id}/slots`, а также в адрес страницы
+         *     записи в клиентском приложении — ссылка должна оставаться читаемой
+         *     и не требовать процентного кодирования.
+         */
+        EventTypeId: string;
         /** @description Слот уже занят другим бронированием (любого типа события). */
         SlotAlreadyBookedError: {
             /** @enum {string} */
@@ -358,7 +368,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                eventTypeId: string;
+                eventTypeId: components["schemas"]["EventTypeId"];
             };
             cookie?: never;
         };
@@ -389,7 +399,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                id: components["schemas"]["EventTypeId"];
             };
             cookie?: never;
         };

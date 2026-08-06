@@ -22,7 +22,7 @@ interface EventTypes {
   @get list(): EventType[] | Error;
 
   /** Получить один тип события по идентификатору. */
-  @get read(@path id: string): EventType | Error;
+  @get read(@path id: EventTypeId): EventType | Error;
 
   /**
    * Создать тип события. Доступно владельцу календаря: он сам задаёт id,

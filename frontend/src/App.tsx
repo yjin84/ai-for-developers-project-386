@@ -1,9 +1,8 @@
+import { RouterProvider } from 'react-router-dom'
+import { router } from '@/router'
+
 function App() {
-  return (
-    <div className="flex min-h-svh items-center justify-center">
-      <h1 className="text-2xl font-semibold">Calendar Booking</h1>
-    </div>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App

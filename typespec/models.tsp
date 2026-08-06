@@ -5,31 +5,59 @@ using Http;
 namespace CalendarBooking;
 
 /**
+ * Идентификатор типа события — kebab-case из латиницы и цифр,
+ * например "consultation-30".
+ *
+ * Формат ограничен, потому что идентификатор подставляется в пути
+ * `/event-types/{id}` и `/event-types/{id}/slots`, а также в адрес страницы
+ * записи в клиентском приложении — ссылка должна оставаться читаемой
+ * и не требовать процентного кодирования.
+ */
+@minLength(1)
+@maxLength(64)
+@pattern("^[a-z0-9]+(-[a-z0-9]+)*$")
+scalar EventTypeId extends string;
+
+/**
  * Тип события, который создаёт владелец календаря.
  * Гости используют его, чтобы понять, на что они записываются,
  * и чтобы выбрать календарь для бронирования.
  */
 model EventType {
   /** Идентификатор задаётся владельцем календаря при создании. */
-  id: string;
+  id: EventTypeId;
 
   /** Название типа события, например "Консультация". */
+  @minLength(1)
+  @maxLength(100)
   name: string;
 
   /** Описание того, что будет происходить на встрече. */
+  @minLength(1)
+  @maxLength(500)
   description: string;
 
-  /** Длительность встречи в минутах. */
+  /** Длительность встречи в минутах: от 5 минут до 8 часов. */
+  @minValue(5)
+  @maxValue(480)
   durationMinutes: int32;
 }
 
 /** Тело запроса на создание типа события владельцем календаря. */
 model EventTypeCreate {
   /** Идентификатор нового типа события, задаётся владельцем. */
-  id: string;
+  id: EventTypeId;
 
+  @minLength(1)
+  @maxLength(100)
   name: string;
+
+  @minLength(1)
+  @maxLength(500)
   description: string;
+
+  @minValue(5)
+  @maxValue(480)
   durationMinutes: int32;
 }
 
@@ -50,7 +78,7 @@ model Booking {
   id: string;
 
   /** Тип события, на который сделано бронирование. */
-  eventTypeId: string;
+  eventTypeId: EventTypeId;
 
   /** Начало забронированного слота. */
   start: utcDateTime;
@@ -65,7 +93,7 @@ model Booking {
 /** Тело запроса на создание бронирования гостем. */
 model BookingCreate {
   /** Идентификатор выбранного типа события. */
-  eventTypeId: string;
+  eventTypeId: EventTypeId;
 
   /** Начало выбранного гостем слота. */
   start: utcDateTime;

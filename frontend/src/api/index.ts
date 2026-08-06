@@ -6,6 +6,7 @@
 export * as eventTypes from './eventTypes'
 export * as slots from './slots'
 export * as bookings from './bookings'
+export { apiBaseUrl, isApiConfigured } from './config'
 export { apiClient } from './client'
 export { ApiError, NetworkError, type ApiErrorKind } from './errors'
 export { queryClient } from './queryClient'

@@ -19,5 +19,5 @@ interface Slots {
    * Слоты, уже занятые бронированием любого типа события, в списке не
    * возвращаются — на одно и то же время не может быть двух записей.
    */
-  @get list(@path eventTypeId: string): AvailableSlot[] | Error;
+  @get list(@path eventTypeId: EventTypeId): AvailableSlot[] | Error;
 }
