@@ -12,10 +12,12 @@ import { createBooking, freeSlotsFor, state } from './state'
  */
 export const handlers = [
   http.get(`${API_BASE_URL}/event-types`, () => {
+    if (state.networkDown) return HttpResponse.error()
     return HttpResponse.json(state.eventTypes)
   }),
 
   http.get(`${API_BASE_URL}/event-types/:id`, ({ params }) => {
+    if (state.networkDown) return HttpResponse.error()
     const eventType = state.eventTypes.find((e) => e.id === params.id)
     if (!eventType) {
       return HttpResponse.json({ code: 404, message: 'Тип события не найден' }, { status: 404 })
@@ -24,6 +26,7 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE_URL}/event-types`, async ({ request }) => {
+    if (state.networkDown) return HttpResponse.error()
     const body = (await request.json()) as {
       id: string
       name: string
@@ -42,6 +45,7 @@ export const handlers = [
   }),
 
   http.get(`${API_BASE_URL}/event-types/:eventTypeId/slots`, ({ params }) => {
+    if (state.networkDown) return HttpResponse.error()
     const eventTypeId = params.eventTypeId as string
     if (!state.eventTypes.some((e) => e.id === eventTypeId)) {
       return HttpResponse.json({ code: 404, message: 'Тип события не найден' }, { status: 404 })
@@ -50,10 +54,12 @@ export const handlers = [
   }),
 
   http.get(`${API_BASE_URL}/bookings`, () => {
+    if (state.networkDown) return HttpResponse.error()
     return HttpResponse.json(state.bookings)
   }),
 
   http.post(`${API_BASE_URL}/bookings`, async ({ request }) => {
+    if (state.networkDown) return HttpResponse.error()
     const body = (await request.json()) as { eventTypeId: string; start: string }
     const result = createBooking(body)
     if (!result.ok) {

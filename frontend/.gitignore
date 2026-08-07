@@ -9,11 +9,15 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-e2e
+dist-smoke
+test-results
 dist-ssr
 *.local
 .env
 .env.*
 !.env.example
+!.env.test
 
 # Editor directories and files
 .vscode/*

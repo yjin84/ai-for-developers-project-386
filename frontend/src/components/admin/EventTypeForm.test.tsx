@@ -4,10 +4,13 @@ import { EventTypeForm } from './EventTypeForm'
 import { renderWithProviders } from '@/test/render'
 import { ApiError } from '@/api/errors'
 import { messages } from '@/lib/messages'
+import type { EventTypeCreateValues } from '@/lib/validation/eventType'
+
+type Submit = (values: EventTypeCreateValues) => Promise<void>
 
 describe('EventTypeForm', () => {
   it('пустой сабмит показывает ошибки по всем полям и не вызывает onSubmit', async () => {
-    const onSubmit = vi.fn()
+    const onSubmit = vi.fn<Submit>()
     const { user } = renderWithProviders(<EventTypeForm onSubmit={onSubmit} onCancel={() => {}} />)
 
     await user.click(screen.getByRole('button', { name: 'Создать' }))
@@ -23,7 +26,7 @@ describe('EventTypeForm', () => {
   })
 
   it('валидные данные → onSubmit с durationMinutes типа number', async () => {
-    const onSubmit = vi.fn().mockResolvedValue(undefined)
+    const onSubmit = vi.fn<Submit>().mockResolvedValue(undefined)
     const { user } = renderWithProviders(<EventTypeForm onSubmit={onSubmit} onCancel={() => {}} />)
 
     await user.type(screen.getByLabelText(messages.admin.form.idLabel), 'meeting-15')
@@ -43,7 +46,7 @@ describe('EventTypeForm', () => {
 
   it('серверный 409 привязывает ошибку к полю id и возвращает на него фокус', async () => {
     const onSubmit = vi
-      .fn()
+      .fn<Submit>()
       .mockRejectedValue(new ApiError(409, { code: 409, message: messages.validation.idDuplicate }))
     const { user } = renderWithProviders(<EventTypeForm onSubmit={onSubmit} onCancel={() => {}} />)
 

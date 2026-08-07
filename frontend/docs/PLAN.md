@@ -898,8 +898,9 @@ initialEntries })` вместо дублирования дерева маршр
 ###### Ход работы (в работе — журнал, продолжать отсюда)
 
 Реализовано:
+
 - `src/test/browser.ts` — `setupWorker(...handlers, /__test/reset,
-  /__test/book, /__test/network)` на absolute `${API_BASE_URL}/__test/…`
+/__test/book, /__test/network)` на absolute `${API_BASE_URL}/__test/…`
   (перехват только cross-origin `http://api.test`, same-origin не попадает
   в SW); `startMockWorker()` вызывает `resetState()` перед `worker.start()`.
 - `src/test/state.ts` — флаг `networkDown`; `src/test/handlers.ts` — при
@@ -914,10 +915,11 @@ initialEntries })` вместо дублирования дерева маршр
 - Прогон `CI=1 npx playwright test --retries=0`: 19 passed.
 
 Нерешённый баг — `e2e/network.spec.ts` (шаг «сетевой сбой»):
+
 - Симптом: после `setNetworkDown(page, true)` переход по ссылке на `/book`
   всё равно рисует список типов (нет экрана ошибки «Нет связи с сервером»).
 - Прямой fetch из `page.evaluate` после тоггла возвращает `{ok:true,
-  status:200}` (т. е. тоггл прошёл и воркер перехватывает), а приложение
+status:200}` (т. е. тоггл прошёл и воркер перехватывает), а приложение
   при этом получает данные. Значит, флаг `networkDown` применяется не к
   запросам приложения при SPA-переходе. Гипотеза: в MSW браузерном handlers
   выполняются в scope воркера (между `msw/browser` и кодом приложения
