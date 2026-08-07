@@ -17,8 +17,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "build:e2e": "vite build --mode test --outDir dist-e2e",
-    "preview:e2e": "vite preview --outDir dist-e2e --port 4173",
-    "preview:smoke": "vite preview --port 4174",
+    "preview:e2e": "vite preview --host 127.0.0.1 --outDir dist-e2e --port 4173",
+    "preview:smoke": "vite preview --host 127.0.0.1 --port 4174",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --config=playwright.smoke.config.ts"
   },

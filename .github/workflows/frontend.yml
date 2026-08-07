@@ -58,4 +58,8 @@ jobs:
         run: npm run test:e2e
 
       - name: Smoke tests (against Prism)
+        # Продакшн-сборка smoke читает `.env`, которого нет в CI (gitignored).
+        # Адрес Prism задаём переменной окружения: Vite подхватит её на сборке.
+        env:
+          VITE_API_BASE_URL: http://127.0.0.1:4010
         run: npm run test:e2e:smoke
