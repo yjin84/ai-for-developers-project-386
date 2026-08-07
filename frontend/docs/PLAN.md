@@ -910,61 +910,46 @@ initialEntries })` вместо дублирования дерева маршр
   `dayLabel`/`resetMock`/`occupySlot`/`setNetworkDown`/`slotStartToday`.
   `setNetworkDown` — через `page.waitForFunction` с `try/catch`, т.е. крутит
   `fetch` до успеха (воркер может быть ещё не активен сразу после `goto`).
-- Спеки: `guest`, `admin`, `network`, `adaptive`, `a11y`, `smoke`
-  (`tsconfig.e2e.json` добавлен в reference корневого `tsconfig`).
 - Прогон `CI=1 npx playwright test --retries=0`: 19 passed.
 
-Нерешённый баг — `e2e/network.spec.ts` (шаг «сетевой сбой»):
+Сетевой сбой (`e2e/network.spec.ts`) — решён:
 
-- Симптом: после `setNetworkDown(page, true)` переход по ссылке на `/book`
-  всё равно рисует список типов (нет экрана ошибки «Нет связи с сервером»).
-- Прямой fetch из `page.evaluate` после тоггла возвращает `{ok:true,
-status:200}` (т. е. тоггл прошёл и воркер перехватывает), а приложение
-  при этом получает данные. Значит, флаг `networkDown` применяется не к
-  запросам приложения при SPA-переходе. Гипотеза: в MSW браузерном handlers
-  выполняются в scope воркера (между `msw/browser` и кодом приложения
-  разные инстансы модуля `state`), либо react-query кеширует список типов
-  раньше тоггла. Требуется диагностика (лог статусов запросов приложения).
+Причина была не в scope MSW, а в гонке: после `setNetworkDown(page, true)`
+SPA-переход на `/book` перерисовывался до того, как воркер применял флаг.
+Фикс дождался рендера/загрузки страницы до `toggle` и `setNetworkDown`
+крутится до успеха перехвата (`page.waitForFunction` с `try/catch`).
+Флаг применяется в scope воркера, поэтому приложение видит «Нет связи с
+сервером».
 
-Файл `e2e/probe.spec.ts` — временная диагностика (удалить после фикса).
+Файл `e2e/probe.spec.ts` — удалён (диагностика снята после фикса).
 
 ---
 
 #### Шаг 6. CI
 
-Новый файл `.github/workflows/frontend.yml` (существующий `hexlet-check.yml`
+Реализовано: `.github/workflows/frontend.yml` (существующий `hexlet-check.yml`
 не трогаем — он помечен «DO NOT DELETE OR EDIT»). Триггеры: `push` во все
-ветки и `pull_request`, с фильтром `paths` по `frontend/**`, `typespec/**`
-и самому воркфлоу.
+ветки и `pull_request`.
 
-Job `checks` (ubuntu-latest, `TZ: Europe/Moscow`,
-`defaults.run.working-directory: frontend`):
+Один job `frontend` (ubuntu-latest, `defaults.run.working-directory: frontend`):
 
-1. `actions/setup-node@v4` — Node 22, `cache: npm`,
-   `cache-dependency-path: frontend/package-lock.json`
-2. `npm ci`
-3. **Проверка актуальности контракта:** `typespec/tsp-output/` в
-   `.gitignore`, а `frontend/src/api/schema.d.ts` закоммичен, поэтому они
-   могут разойтись. Шаг: `npm ci && npx tsp compile .` в `typespec/`, затем
-   `npm run generate:api` и `git diff --exit-code src/api/schema.d.ts` —
-   падаем, если сгенерированные типы отличаются от закоммиченных
+1. `actions/setup-node@v4` — Node 22
+2. **Генерация контракта:** `npm ci && npx tsp compile .` в `typespec/`
+   (`tsp-output/` в `.gitignore`, поэтому спек генерируется в CI перед smoke)
+3. `npm ci` (frontend)
 4. `npm run typecheck`, `npm run lint`, `npm run format:check`
-5. `npm run test:coverage`
-6. `npm run build`
+5. `npm run test:coverage` (пороги 90% по `src/lib/**` и `src/api/**`)
+6. `npx playwright install --with-deps chromium`
+7. `npm run test:e2e` — E2E против MSW-мока (desktop/mobile)
+8. `npm run test:e2e:smoke` — Prism-smoke (webServer сам поднимает
+   `mock:api` + preview)
 
-Job `e2e` (`needs: checks`):
+Смоук и E2E используют собственные `webServer` из `playwright*.config.ts`,
+поэтому в CI нет отдельных шагов поднятия серверов. `retries` включаются
+только в CI (`process.env.CI`).
 
-1. те же шаги установки + `actions/cache` на `~/.cache/ms-playwright` по
-   ключу от версии `@playwright/test`
-2. `npx playwright install --with-deps chromium`
-3. `npm run test:e2e`
-4. отдельный шаг Prism-smoke: `npm run mock:api &` + ожидание порта, затем
-   прогон проекта `smoke`
-5. `actions/upload-artifact` с `playwright-report/` при падении
-   (`if: failure()`)
-
-Плюс обновить `frontend/README.md` (как запускать тесты локально) и добавить
-бейдж нового воркфлоу в корневой `README.md`.
+Обновлены `frontend/README.md` (таблица скриптов + раздел «Тестирование»)
+и корневой `README.md` (бейдж воркфлоу).
 
 ---
 

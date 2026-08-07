@@ -41,6 +41,30 @@ npm run dev
 | `npm run lint`                    | oxlint                                                        |
 | `npm run format` / `format:check` | prettier                                                      |
 | `npm run mock:api`                | Prism-мок API из `../typespec/tsp-output/schema/openapi.yaml` |
+| `npm run test`                    | unit/component тесты (Vitest + RTL)                           |
+| `npm run test:coverage`           | unit-тесты + проверка порогов покрытия                        |
+| `npm run test:e2e`                | E2E против MSW-мока (Playwright, desktop/mobile)              |
+| `npm run test:e2e:smoke`          | smoke против Prism (по контракту из `../typespec`)            |
+
+## Тестирование
+
+| Уровень              | Инструмент         | Что покрывает                                                           |
+| -------------------- | ------------------ | ----------------------------------------------------------------------- |
+| unit/компонент       | Vitest + RTL + MSW | контракт API, слой клиента, формы, страницы — ключевые модули 100%      |
+| E2E (desktop/mobile) | Playwright         | сценарии гостя, админа, адаптивность, a11y, сбои сети — против MSW-мока |
+| smoke                | Playwright + Prism | приложение без MSW против реального `openapi.yaml` из `../typespec`     |
+
+Прогон всех проверок CI:
+
+```bash
+npm run typecheck && npm run lint && npm run format:check
+npm run test:coverage
+npm run test:e2e
+npm run test:e2e:smoke
+```
+
+Перед smoke сгенерируйте контракт (в репозиторий он не коммитится), обычно это
+делает CI, но локально: `cd ../typespec && npx tsp compile .`.
 
 ## Компоненты UI
 
