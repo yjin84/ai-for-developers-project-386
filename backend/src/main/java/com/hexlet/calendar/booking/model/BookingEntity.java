@@ -24,7 +24,7 @@ public class BookingEntity {
     @Column(nullable = false, unique = true)
     private Instant start;
 
-    @Column(nullable = false)
+    @Column(name = "\"end\"", nullable = false)
     private Instant end;
 
     @Column(name = "created_at", nullable = false)
