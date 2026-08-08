@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BookingRepository extends JpaRepository<BookingEntity, String> {
 
     List<BookingEntity> findByStartBetween(Instant from, Instant to);
+
+    List<BookingEntity> findAllByStart(Instant start);
 }

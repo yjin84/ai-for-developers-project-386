@@ -1,5 +1,7 @@
 package com.hexlet.calendar.booking.web;
 
+import com.hexlet.calendar.booking.service.SlotAlreadyBookedException;
+import com.hexlet.calendar.booking.service.SlotNotAvailableException;
 import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -36,5 +38,16 @@ public class ApiExceptionHandler {
     public ResponseEntity<ErrorBody> handleNotFound(ResponseStatusException ex) {
         HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
         return ResponseEntity.status(status).body(ErrorBody.of(status.value(), "Тип события не найден"));
+    }
+
+    @ExceptionHandler(SlotNotAvailableException.class)
+    public ResponseEntity<Object> handleSlotNotAvailable(SlotNotAvailableException ex) {
+        return ResponseEntity.badRequest().body(ErrorBody.of("slot_not_available", ex.getMessage()));
+    }
+
+    @ExceptionHandler(SlotAlreadyBookedException.class)
+    public ResponseEntity<Object> handleSlotAlreadyBooked(SlotAlreadyBookedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorBody.of("slot_already_booked", ex.getMessage()));
     }
 }
