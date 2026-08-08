@@ -8,6 +8,7 @@ import com.hexlet.calendar.booking.repository.EventTypeRepository;
 import com.hexlet.calendar.booking.web.BookingCreateRequest;
 import com.hexlet.calendar.booking.web.BookingResponse;
 import com.hexlet.calendar.booking.web.BookingWithEventTypeResponse;
+import com.hexlet.calendar.booking.web.EventTypeResponse;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -70,8 +71,8 @@ Instant now = clock.instant();
     public List<BookingWithEventTypeResponse> listAll() {
         return bookingRepository.findAll().stream()
                 .map(booking -> new BookingWithEventTypeResponse(booking.getId(),
-                        booking.getEventType(), booking.getStart(), booking.getEnd(),
-                        booking.getCreatedAt()))
+                        EventTypeResponse.from(booking.getEventType()), booking.getStart(),
+                        booking.getEnd(), booking.getCreatedAt()))
                 .toList();
     }
 }
