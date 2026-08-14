@@ -12,6 +12,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      # Без input `release-type` action читает `release-please-config.json`
+      # и `.release-please-manifest.json` (manifest-режим): стартовая версия
+      # 0.1.0 из манифеста, `release-type: simple` из конфига.
       - uses: google-github-actions/release-please-action@v4
-        with:
-          release-type: simple
