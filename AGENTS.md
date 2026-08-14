@@ -81,3 +81,15 @@ Single test: `npx vitest run <path>` (unit: `src/**/*.test.ts`, dom/jsdom: `src/
 - `typespec/` uses `@typespec/openapi3` → OpenAPI 3.1.0, output `{output-dir}/schema`.
 - Never edit `.github/workflows/hexlet-check.yml` (generated, "DO NOT DELETE OR EDIT"); also don't touch `.github/` — the correct covering add is `.github/workflows/frontend.yml`.
 - Backend error bodies mirror the contract `Error`/`SlotAlreadyBookedError`/`SlotNotAvailableError` (see `web/ApiExceptionHandler.java`); bean validation annotations mirror the zod rules in `frontend/src/lib/validation/eventType.ts`. When changing validation, change both sides and `typespec/`.
+
+## Коммиты
+
+Формат сообщений коммитов — **Conventional Commits**, обязателен для коммитов агента:
+
+- Типы: `feat:`, `fix:`, `refactor:`, `test:`, `ci:`, `docs:`, `chore:`, `perf:`, `build:`.
+- Опционально `scope` в скобках после типа, например `test(e2e):`.
+- Ломающие изменения — `!` после типа/scope или строка `BREAKING CHANGE:` в теле.
+
+Формат проверяется автоматически в CI (`commitlint` в `.github/workflows/commit-lint.yml`, на `pull_request`).
+
+`release-please` (этап D) версионирует релиз по этому формату — некорректное сообщение (`feat`, `fix`, `BREAKING CHANGE`) сдвигает версию и ломает changelog. История должна оставаться в Conventional Commits.
