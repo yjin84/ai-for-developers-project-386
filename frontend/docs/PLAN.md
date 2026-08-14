@@ -971,9 +971,34 @@ Lighthouse в CI (порог a11y ≥ 95 остаётся ручной пров�
   сквозной админский сценарий, 409/400, валидация формы, сетевой сбой,
   доступность (axe + клавиатура), адаптивность (мобильный проект)
 
-### Этап 7. Интеграция с реальным бэкендом и релиз — ❌ исключён
+### Этап 7. Интеграция с реальным бэкендом и релиз — ✅ выполнено
 
-Этап выведен из плана по решению команды: интеграция с реальным бэкендом
-и релиз выполняются вне рамок проекта. Фронтенд останавливается на этапе 6
-(тесты + CI); работа против настоящего бэкенда покрыта контрактом
-(`openapi.yaml`) и проверками этапа 6 (включая Prism-smoke).
+Интеграционные E2E и релизная автоматизация выведены в отдельный план
+(`plan260814.md`): этап A — интеграционные тесты против реального бэкенда,
+этап D — release-please.
+
+**Сценарии интеграционных тестов** (`frontend/e2e/integration.spec.ts`,
+`test:e2e:integration`, реальный Spring Boot на `:4010`, прод-сборка без MSW
+на `:4175`, data-driven, `mode: 'serial'`, уникальный id типа `e2e-${Date.now()}`):
+
+- Тест 1 — happy path: тип создаётся через `POST /event-types` → в UI: лендинг →
+  «Записаться» → карточка типа → первый доступный день → первый слот дня →
+  «Подтвердить» → экран подтверждения → `GET /bookings` подтверждает бронь.
+- Тест 2 — 409: слот занимается через API (`POST /bookings` 201) *после* загрузки
+  списка слотов → в UI выбрать занятый слот и подтвердить → сообщение
+  `messages.errors.slotAlreadyBookedTitle`, выбор сброшен, `confirm` снова
+  disabled, занятый слот исчезает из списка.
+
+**Релиз** — release-please (single-package, `release-type: simple`):
+`.release-please-manifest.json` (`{ ".": "0.1.0" }`),
+`release-please-config.json` (`changelog-path: CHANGELOG.md`),
+`.github/workflows/release.yml` (push в main, `contents: write` +
+`pull-requests: write`).
+
+**Критерии готовности:**
+
+- `test:e2e:integration` зелёный локально и в CI (`integration.yml`).
+- Формат коммитов — Conventional Commits; проверяется commitlint
+  (`commit-lint.yml`, AGENTS.md §«Коммиты»).
+- После мёржа в main release-please открывает/обновляет release-PR вида
+  `chore(main): release …` и генерирует `CHANGELOG.md`.
