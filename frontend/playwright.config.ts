@@ -14,9 +14,10 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
-  // Prism-smoke живёт только в `playwright.smoke.config.ts` — против отдельной
-  // сборки и mock-сервера. Из обычного прогона его исключаем.
-  testIgnore: /smoke\.spec\.ts/,
+  // Prism-smoke и интеграция против реального бэкенда живут в отдельных
+  // конфигах (`playwright.smoke.config.ts`, `playwright.integration.config.ts`)
+  // — против отдельной сборки и сервера. Из обычного прогона их исключаем.
+  testIgnore: [/smoke\.spec\.ts/, /integration\.spec\.ts/],
   fullyParallel: true,
   timeout: 60_000,
   retries: process.env.CI ? 2 : 0,
