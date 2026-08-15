@@ -1002,3 +1002,34 @@ Lighthouse в CI (порог a11y ≥ 95 остаётся ручной пров�
   (`commit-lint.yml`, AGENTS.md §«Коммиты»).
 - После мёржа в main release-please открывает/обновляет release-PR вида
   `chore(main): release …` и генерирует `CHANGELOG.md`.
+
+### Этап 8. Docker и деплой на Railway — ✅ выполнено
+
+Деплой выведен в отдельный план (`plan260815.md`): один контейнер «SPA + API»
+на одном порту, деплой на Railway.
+
+**Решение:** многоступенчатый `Dockerfile` в корне репозитория — stage 1
+(`node:22`) собирает фронтенд с `VITE_API_BASE_URL=/` → same-origin
+(`apiBaseUrl === ""`, `isApiConfigured === true`, относительные запросы на
+тот же origin); stage 2 (`eclipse-temurin:25-jdk`) копирует `frontend/dist/*`
+в `backend/src/main/resources/static/` и собирает `bootJar`; stage 3
+(`eclipse-temurin:25-jre`) запускает `booking-0.0.1-SNAPSHOT.jar`, слушающий
+`PORT` от платформы. `.dockerignore` исключает `node_modules`, `build`,
+`.gradle`, `dist*`, `coverage`, `plan*.md`, `.env`. Обязателен `.npmrc`
+(`legacy-peer-deps=true`) в stage 1 — без него `npm ci` падает на peer-конфликте
+(`@hookform/resolvers` vs `ajv-formats`).
+
+**SPA-fallback:** `SpaForwardController` (forward `/index.html` для
+`/book`, `/book/**`, `/admin`) + MockMvc-тест `SpaForwardTest`; API-маппинги
+не затрагиваются (404-тесты остаются зелёными).
+
+**Same-origin фиксация:** тесты в `src/api/client.test.ts`
+(`VITE_API_BASE_URL=/` → `apiBaseUrl === ""`, `isApiConfigured === true`, нет
+короткого замыкания `notConfigured`).
+
+**Публичный URL:** <https://pleasant-art-production-18a0.up.railway.app> —
+проверены `/` (HTML 200), `/book` (SPA-fallback), `/event-types` (JSON),
+happy-path брони через API.
+
+**Риски:** H2 in-memory (данные слетают при рестарте — для демо ок);
+локальный docker-демон недоступен, образ собирает Railway.
