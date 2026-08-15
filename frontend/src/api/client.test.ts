@@ -46,4 +46,23 @@ describe('api/client', () => {
     expect(apiBaseUrl).toBe('https://api.example.com')
     expect(isApiConfigured).toBe(true)
   })
+
+  it('VITE_API_BASE_URL=/ даёт пустую базу (same-origin) и активную конфигурацию', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', '/')
+    const { apiBaseUrl, isApiConfigured } = await import('./config')
+
+    expect(apiBaseUrl).toBe('')
+    expect(isApiConfigured).toBe(true)
+  })
+
+  it('same-origin база не вызывает короткого замыкания notConfigured', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', '/')
+    const { apiClient } = await import('./client')
+    const { NetworkError } = await import('./errors')
+
+    const error = await apiClient.GET('/event-types').catch((e) => e)
+
+    expect(error).not.toBeInstanceOf(NetworkError)
+    expect((error as { notConfigured?: boolean }).notConfigured).toBeUndefined()
+  })
 })
